@@ -30,7 +30,7 @@ object AdbUtil {
         }
         val parcelArgs = mutableListOf<String>().apply {
             add(adbPath)
-            add(" adb")
+            add("adb")
             addAll(args)
         }
         return withContext(Dispatchers.IO) {
