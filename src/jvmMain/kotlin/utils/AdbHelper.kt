@@ -18,4 +18,8 @@ object AdbHelper {
     suspend fun installApk(path: String) = AdbUtil.exec(listOf("install", path))
 
     suspend fun uninstallApk(packageName: String) = AdbUtil.exec(listOf("uninstall", packageName))
+
+    suspend fun clearApkData(packageName: String) = AdbUtil.exec(listOf("shell", "pm", "clear", packageName))
+
+    suspend fun clearApkDataByShell(packageName: String) = AdbUtil.exec(listOf("pm", "clear", packageName), true)
 }

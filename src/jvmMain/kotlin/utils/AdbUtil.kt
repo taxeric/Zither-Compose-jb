@@ -21,7 +21,14 @@ object AdbUtil {
 
     fun checkAdb() = adbPath.isNotEmpty()
 
-    suspend fun exec(args: List<String>): CommandResult {
+    /**
+     * @param args commands
+     * @param shellStatus 是否进入设备,如果已经调用[adb shell],则该值为true,命令不会携带[adb path] adb
+     */
+    suspend fun exec(
+        args: List<String>,
+        shellStatus: Boolean = false
+    ): CommandResult {
         if (checkAdb()) {
             return CommandResult(exitCode = -1)
         }
@@ -29,8 +36,10 @@ object AdbUtil {
             return CommandResult(exitCode = -2)
         }
         val parcelArgs = mutableListOf<String>().apply {
-            add(adbPath)
-            add("adb")
+            if (!shellStatus) {
+                add(adbPath)
+                add("adb")
+            }
             addAll(args)
         }
         return withContext(Dispatchers.IO) {
