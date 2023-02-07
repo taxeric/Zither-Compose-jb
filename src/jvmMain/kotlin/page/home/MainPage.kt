@@ -1,4 +1,4 @@
-package page
+package page.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState

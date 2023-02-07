@@ -14,8 +14,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import ext.toObj
-import page.MainScreen
-import page.SettingScreen
+import page.home.MainScreen
+import page.setting.SettingScreen
 import page.common.CustomTab
 import page.common.SimpleRadioGroup
 import utils.AdbInfo

@@ -1,4 +1,4 @@
-package page
+package page.setting
 
 import Cache
 import androidx.compose.foundation.layout.Column
@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import localConfigFilename
 import localConfigPath
 import utils.AdbInfo
+import utils.AdbUtil
 import utils.FileUtil
 import utils.adbInfoFlow
 
@@ -34,10 +35,11 @@ fun SettingScreen() {
         ) {
             Button(
                 onClick = {
-                    val path = FileUtil.openCommonFolderDialog()
+                    val path = FileUtil.openCommonFileDialog()
                     if (path.isNotEmpty()) {
                         val newInfo = AdbInfo(path = path)
                         adbInfoFlow.tryEmit(newInfo)
+                        AdbUtil.adbPath = path
                         val cache = Cache(adb = newInfo)
                         coroutine.launch { FileUtil.write(cache.covertStr(), localConfigPath, localConfigFilename) }
                     }
