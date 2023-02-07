@@ -3,6 +3,23 @@ package utils.sign
 import localConfigPath
 import utils.CmdProcess
 import utils.CommandResult
+import utils.obtainFlow2
+
+data class SignInfo(
+    val zipalignPath: String = "",
+    val apksignerPath: String = "",
+    val keys: List<KeyInfo> = listOf(),
+)
+
+data class KeyInfo(
+    val tag: String = "",
+    val jksPath: String = "",
+    val jksKeyStorePwd: String = "",
+    val jksKeyAlias: String = "",
+    val jksKeyPwd: String = "",
+)
+
+val signFlow = obtainFlow2<SignInfo>()
 
 object SignProcess: CmdProcess() {
 
