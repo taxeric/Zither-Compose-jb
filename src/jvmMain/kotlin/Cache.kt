@@ -1,4 +1,4 @@
-import utils.AdbInfo
+import utils.adb.AdbInfo
 
 data class Cache(
     val adb: AdbInfo
