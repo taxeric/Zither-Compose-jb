@@ -36,7 +36,7 @@ object AdbUtil {
         args: List<String>,
         shellStatus: Boolean = false
     ): CommandResult {
-        if (checkAdb()) {
+        if (!checkAdb()) {
             return CommandResult(exitCode = -1)
         }
         if (args.isEmpty()) {
