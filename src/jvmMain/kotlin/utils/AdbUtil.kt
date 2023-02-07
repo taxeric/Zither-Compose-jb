@@ -15,9 +15,16 @@ data class CommandResult(
     val stderr: String = "",
 )
 
+data class AdbInfo(
+    val path: String = "",
+    val version: String = "",
+)
+
+val adbInfoFlow = obtainFlow2<AdbInfo>()
+
 object AdbUtil {
 
-    private var adbPath = ""
+    var adbPath = ""
 
     fun checkAdb() = adbPath.isNotEmpty()
 

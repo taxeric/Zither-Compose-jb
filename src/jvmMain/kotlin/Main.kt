@@ -13,10 +13,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import ext.toObj
 import page.MainScreen
 import page.SettingScreen
 import page.common.CustomTab
 import page.common.SimpleRadioGroup
+import utils.AdbInfo
+import utils.AdbUtil
+import utils.FileUtil
+import utils.adbInfoFlow
 
 @Composable
 @Preview
@@ -28,6 +33,15 @@ fun App() {
         add(CustomTab("TAB1"))
         add(CustomTab("TAB2"))
     }
+    produceState(initialValue = "", key1 = Unit) {
+        localConfigPath = System.getProperty("user.dir")
+        value = FileUtil.read(localConfigPath, localConfigFilename)
+            .toObj<Cache>()?.adb?.path?: ""
+        if (value.isNotEmpty()) {
+            AdbUtil.adbPath = value
+            adbInfoFlow.tryEmit(AdbInfo(path = value))
+        }
+    }.value
     MaterialTheme {
         Row(
             modifier = Modifier
@@ -76,7 +90,10 @@ fun App() {
 }
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
+    Window(
+        onCloseRequest = ::exitApplication,
+        title = "Zither"
+    ) {
         App()
     }
 }
