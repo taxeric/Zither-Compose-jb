@@ -35,7 +35,7 @@ abstract class CmdProcess {
                 )
             } catch (e: Throwable) {
                 CommandResult(
-                    exitCode = cmd?.exitValue()?:-3,
+                    exitCode = cmd?.exitValue()?: CommandResult.PROCESS_ERROR,
                     stdout = "failed",
                     stderr = e.message?:"unknown"
                 )
@@ -50,4 +50,12 @@ data class CommandResult(
     val exitCode: Int,
     val stdout: String = "",
     val stderr: String = "",
-)
+) {
+    companion object {
+        const val CHECK_FAILED   = -1
+        const val COMMAND_EMPTY  = -2
+        const val PROCESS_ERROR  = -3
+
+        fun checkFailed() = CommandResult(exitCode = CHECK_FAILED)
+    }
+}

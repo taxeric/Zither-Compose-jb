@@ -26,10 +26,10 @@ object AdbProcess : CmdProcess(){
         shellStatus: Boolean = false
     ): CommandResult {
         if (!checkAdb()) {
-            return CommandResult(exitCode = -1)
+            return CommandResult(exitCode = CommandResult.CHECK_FAILED)
         }
         if (args.isEmpty()) {
-            return CommandResult(exitCode = -2)
+            return CommandResult(exitCode = CommandResult.COMMAND_EMPTY)
         }
         val parcelArgs = mutableListOf<String>().apply {
             if (!shellStatus) {
