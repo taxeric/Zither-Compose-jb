@@ -18,10 +18,12 @@ import page.home.MainScreen
 import page.setting.SettingScreen
 import page.common.CustomTab
 import page.common.SimpleRadioGroup
-import utils.AdbInfo
-import utils.AdbUtil
+import page.sign.SignScreen
+import utils.adb.AdbProcess
 import utils.FileUtil
-import utils.adbInfoFlow
+import utils.adb.adbInfoFlow
+import utils.sign.SignProcess
+import utils.sign.signFlow
 
 @Composable
 @Preview
@@ -32,15 +34,18 @@ fun App() {
     val tabs = mutableListOf<CustomTab>().apply {
         add(CustomTab("TAB1"))
         add(CustomTab("TAB2"))
+        add(CustomTab("TAB3"))
     }
-    produceState(initialValue = "", key1 = Unit) {
+    produceState(initialValue = Cache.default(), key1 = Unit) {
         localConfigPath = System.getProperty("user.dir")
         value = FileUtil.read(localConfigPath, localConfigFilename)
-            .toObj<Cache>()?.adb?.path?: ""
-        if (value.isNotEmpty()) {
-            AdbUtil.adbPath = value
-            adbInfoFlow.tryEmit(AdbInfo(path = value))
-        }
+            .toObj()?: Cache.default()
+        localCache = value
+        AdbProcess.adbPath = value.adb.path
+        adbInfoFlow.tryEmit(localCache.adb)
+        SignProcess.zipalignPath = value.sign.zipalignPath
+        SignProcess.apksignerPath = value.sign.apksignerPath
+        signFlow.tryEmit(localCache.sign)
     }.value
     MaterialTheme {
         Row(
@@ -79,10 +84,16 @@ fun App() {
                 modifier = Modifier
                     .weight(7f)
             ) {
-                if (selectedIndex == 0) {
-                    MainScreen()
-                } else if (selectedIndex == 1) {
-                    SettingScreen()
+                when (selectedIndex) {
+                    0 -> {
+                        MainScreen()
+                    }
+                    1 -> {
+                        SignScreen()
+                    }
+                    2 -> {
+                        SettingScreen()
+                    }
                 }
             }
         }
