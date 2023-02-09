@@ -1,12 +1,10 @@
 package page.setting
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +13,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.rememberDialogState
 import ext.covertStr
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -25,6 +27,7 @@ import utils.adb.AdbInfo
 import utils.adb.AdbProcess
 import utils.FileUtil
 import utils.adb.adbInfoFlow
+import utils.sign.KeyInfo
 import utils.sign.SignInfo
 import utils.sign.SignProcess
 import utils.sign.signFlow
@@ -74,6 +77,7 @@ fun adbView(coroutine: CoroutineScope) {
 @Composable
 fun signView(coroutine: CoroutineScope) {
     val signInfo = signFlow.collectAsState(initial = SignInfo()).value
+    var addKeyDialog by remember { mutableStateOf(false) }
     Column {
         Text("sign")
         Row(
@@ -121,6 +125,13 @@ fun signView(coroutine: CoroutineScope) {
             Text(signInfo.apksignerPath)
         }
         Text("共存在 ${signInfo.keys.size} 个签名文件")
+        Button(
+            onClick = {
+                addKeyDialog = true
+            }
+        ) {
+            Text("新签名")
+        }
         signInfo.keys.forEach { key ->
             Text(
                 buildAnnotatedString {
@@ -130,6 +141,101 @@ fun signView(coroutine: CoroutineScope) {
                     }
                 }
             )
+        }
+    }
+    if (addKeyDialog) {
+        addNewKeyDialog(coroutine) { addKeyDialog = false }
+    }
+}
+
+@Composable
+private fun addNewKeyDialog(
+    coroutine: CoroutineScope,
+    onClose: () -> Unit
+) {
+    var tag by remember { mutableStateOf("") }
+    var keyStore by remember { mutableStateOf("") }
+    var keyStorePwd by remember { mutableStateOf("") }
+    var keyAlias by remember { mutableStateOf("") }
+    var keyPwd by remember { mutableStateOf("") }
+    Dialog(
+        state = rememberDialogState(position = WindowPosition(Alignment.Center)),
+        onCloseRequest = { onClose() },
+        title = "Sign Config"
+    ) {
+        Column {
+            OutlinedTextField(
+                label = { Text("起个名字吧") },
+                value = tag,
+                onValueChange = {
+                    tag = it
+                }
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            OutlinedTextField(
+                label = { Text("key store") },
+                value = keyStore,
+                onValueChange = {
+                    keyStore = it
+                }
+            )
+            Button(
+                onClick = {
+                    coroutine.launch {
+                        val file = FileUtil.openCommonFileDialog()
+                        keyStore = file
+                    }
+                }
+            ) {
+                Text("choose")
+            }
+            OutlinedTextField(
+                label = { Text("key store pwd") },
+                value = keyStorePwd,
+                onValueChange = {
+                    keyStorePwd = it
+                }
+            )
+            OutlinedTextField(
+                label = { Text("key alias") },
+                value = keyAlias,
+                onValueChange = {
+                    keyAlias = it
+                }
+            )
+            OutlinedTextField(
+                label = { Text("key pwd") },
+                value = keyPwd,
+                onValueChange = {
+                    keyPwd = it
+                }
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = {
+                    val keyInfo = KeyInfo(
+                        tag = tag,
+                        jksPath = keyStore,
+                        jksKeyStorePwd = keyStorePwd,
+                        jksKeyAlias = keyAlias,
+                        jksKeyPwd = keyPwd
+                    )
+                    val cacheKey = localCache.sign.keys
+                    val newKeys = mutableListOf<KeyInfo>().apply {
+                        addAll(cacheKey)
+                        add(keyInfo)
+                    }
+                    val newSign = localCache.sign.copy(keys = newKeys)
+                    localCache = localCache.copy(
+                        sign = newSign
+                    )
+                    signFlow.tryEmit(localCache.sign)
+                    coroutine.launch { FileUtil.write(localCache.covertStr(), localConfigPath, localConfigFilename) }
+                    onClose()
+                }
+            ) {
+                Text("save")
+            }
         }
     }
 }
