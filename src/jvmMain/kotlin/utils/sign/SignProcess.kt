@@ -99,6 +99,8 @@ object SignProcess: CmdProcess() {
             outputFile = localConfigPath + "signed.apk"
         }
         val signArgs = mutableListOf<String>().apply {
+            add("java")
+            add("-jar")
             add(apksignerPath)
             add("sign")
             add("--verbose")

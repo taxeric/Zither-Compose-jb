@@ -31,20 +31,30 @@ fun SignScreen() {
     var zipalignCompletedFilename by remember { mutableStateOf("") }
     var outputFilePath by remember { mutableStateOf("") }
     var outputFilename by remember { mutableStateOf("") }
+
+    val tabs = mutableListOf<CustomTab>().apply {
+        localCache.sign.keys.forEach {
+            add(CustomTab(it.tag))
+        }
+    }
+    var selectedIndex by remember { mutableStateOf(0) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(0.dp, 0.dp, 12.dp, 0.dp)
     ) {
         Text("key")
-        keyItems()
+        keyItems(tabs, selectedIndex) {
+            selectedIndex = it
+        }
         Text("output")
         signFileItem(
             openFolder = false,
             path = steadyFilePath,
-            filename = steadyFilename,
+            filename = "",
             onPathChanged = { steadyFilePath = it },
-            onValueChanged = { steadyFilename = it }
+            onValueChanged = {}
         )
         signFileItem(
             path = zipalignCompletedFilePath,
@@ -60,13 +70,30 @@ fun SignScreen() {
         )
         Button(
             onClick = {
+                SignProcess.steadyFilePath = steadyFilePath
+                SignProcess.zipalignCompletedFilePath = zipalignCompletedFilePath + zipalignCompletedFilename
+                SignProcess.outputFile = outputFilePath + outputFilename
+                val selectKey = localCache.sign.keys[selectedIndex]
+                SignProcess.jksPath = selectKey.jksPath
+                SignProcess.jksKeyStorePwd = selectKey.jksKeyStorePwd
+                SignProcess.jksKeyAlias = selectKey.jksKeyAlias
+                SignProcess.jksKeyPwd = selectKey.jksKeyPwd
+                println(SignProcess.jksPath)
+                println(SignProcess.jksKeyStorePwd)
+                println(SignProcess.jksKeyAlias)
+                println(SignProcess.jksKeyPwd)
+                println(SignProcess.steadyFilePath)
+                println(SignProcess.zipalignCompletedFilePath)
+                println(SignProcess.outputFile)
             }
         ) {
             Text("save")
         }
         Button(
             onClick = {
-                coroutine.launch { ProcessManager.signHelper.exec() }
+                coroutine.launch {
+                    ProcessManager.signHelper.exec()
+                }
             }
         ) {
             Text("run")
@@ -75,17 +102,11 @@ fun SignScreen() {
 }
 
 @Composable
-private fun keyItems() {
-    val tabs = mutableListOf<CustomTab>().apply {
-        localCache.sign.keys.forEach {
-            add(CustomTab(it.tag))
-        }
-    }
-    var selectedIndex by remember { mutableStateOf(0) }
+private fun keyItems(tabs: List<CustomTab>, selectedIndex: Int, onSelected: (Int) -> Unit) {
     SimpleRadioGroup(
         tabs = tabs,
         onSelected = { index, _ ->
-            selectedIndex = index
+            onSelected(index)
         },
         defaultSelected = selectedIndex,
         modifier = Modifier,
@@ -138,14 +159,16 @@ private fun signFileItem(
         ) {
             Text("set")
         }
-        OutlinedTextField(
-            label = {
-                Text("文件名")
-            },
-            value = filename,
-            onValueChange = onValueChanged,
-            modifier = Modifier
-                .weight(1f)
-        )
+        if (openFolder) {
+            OutlinedTextField(
+                label = {
+                    Text("文件名")
+                },
+                value = filename,
+                onValueChange = onValueChanged,
+                modifier = Modifier
+                    .weight(1f)
+            )
+        }
     }
 }

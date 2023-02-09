@@ -113,7 +113,7 @@ fun signView(coroutine: CoroutineScope) {
                     if (path.isNotEmpty()) {
                         val newInfo = signInfo.copy(apksignerPath = path)
                         signFlow.tryEmit(newInfo)
-                        SignProcess.zipalignPath = path
+                        SignProcess.apksignerPath = path
                         val lastInfo = localCache.sign.copy(apksignerPath = path)
                         localCache = localCache.copy(sign = lastInfo)
                         coroutine.launch { FileUtil.write(localCache.covertStr(), localConfigPath, localConfigFilename) }
