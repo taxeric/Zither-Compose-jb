@@ -56,6 +56,6 @@ data class CommandResult(
         const val COMMAND_EMPTY  = -2
         const val PROCESS_ERROR  = -3
 
-        fun checkFailed() = CommandResult(exitCode = CHECK_FAILED)
+        fun checkFailed(err: String = "") = CommandResult(exitCode = CHECK_FAILED, stderr = err)
     }
 }
