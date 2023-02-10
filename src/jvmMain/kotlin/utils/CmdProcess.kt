@@ -20,12 +20,12 @@ abstract class CmdProcess {
                 }
                 val stdout = async {
                     runInterruptible {
-                        String(cmd.inputStream.readAllBytes(), Charsets.UTF_8)
+                        String(cmd.inputStream.readAllBytes(), charset("GBK"))
                     }
                 }
                 val stderr = async {
                     runInterruptible {
-                        String(cmd.errorStream.readAllBytes(), Charsets.UTF_8)
+                        String(cmd.errorStream.readAllBytes(), charset("GBK"))
                     }
                 }
                 CommandResult(
