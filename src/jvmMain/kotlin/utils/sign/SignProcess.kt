@@ -31,6 +31,7 @@ object SignProcess: CmdProcess() {
      */
     var zipalignPath: String = ""
     var apksignerPath: String = ""
+    var keytoolPath: String = ""
     /**
      * 签名文件路径
      */
@@ -118,4 +119,68 @@ object SignProcess: CmdProcess() {
         }
         return realExec(signArgs)
     }
+
+    /**
+     * 创建一个密钥
+     */
+    suspend fun createKey(
+        storePath: String,
+        storePwd: String,
+        alias: String,
+        keyPwd: String,
+        validity: Int = 10,
+        keytoolPath: String = "keytool",
+        name: String = "Unknown"
+    ): CommandResult {
+        if (!existKeytoolEnvironment()) {
+            return CommandResult.checkFailed("环境变量不存在")
+        }
+        val args = mutableListOf<String>().apply {
+            add(keytoolPath)
+            add("-genkey")
+            add("-alias")
+            add(alias)
+            add("-keypass")
+            add(keyPwd)
+            add("-keyalg")
+            add("RSA")
+            add("-keysize")
+            add("2048")
+            add("-validity")
+            val realValidity = if (validity < 0 || validity > 100) {
+                10
+            } else {
+                validity
+            }
+            add("${realValidity * 365}")
+            add("-keystore")
+            add("${storePath}.jks")
+            add("-storepass")
+            add(storePwd)
+            add("-storetype")
+            add("pkcs12")
+        }
+        return realExec(args)
+    }
+
+    /**
+     * @param file jks文件路径
+     */
+    suspend fun showJksInfo(file: String, storepass: String, keytoolPath: String?): CommandResult {
+        if (!existKeytoolEnvironment()) {
+            return CommandResult.checkFailed("环境变量不存在")
+        }
+        val args = mutableListOf<String>().apply {
+            add(keytoolPath ?: "keytool")
+            add("--list")
+            add("-v")
+            add("-keystore")
+            add(file)
+            add("-storepass")
+            add(storepass)
+        }
+        return realExec(args)
+    }
+
+    suspend fun existKeytoolEnvironment() = realExec(listOf("keytool")).exitCode == 0
 }
