@@ -1,9 +1,11 @@
 import androidx.compose.material.MaterialTheme
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -32,9 +34,9 @@ fun App() {
         mutableStateOf(0)
     }
     val tabs = mutableListOf<CustomTab>().apply {
-        add(CustomTab("TAB1"))
-        add(CustomTab("TAB2"))
-        add(CustomTab("TAB3"))
+        add(CustomTab("常用"))
+        add(CustomTab("签名"))
+        add(CustomTab("设置"))
     }
     produceState(initialValue = Cache.default(), key1 = Unit) {
         localConfigPath = System.getProperty("user.dir")
@@ -103,8 +105,21 @@ fun App() {
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Zither"
+        title = "Zither",
+        resizable = false,
+//        transparent = true,
+        undecorated = true,
     ) {
-        App()
+        Column {
+            WindowDraggableArea {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .background(Color.White)
+                )
+            }
+            App()
+        }
     }
 }
