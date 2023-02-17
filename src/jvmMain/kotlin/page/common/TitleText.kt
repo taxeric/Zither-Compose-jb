@@ -30,5 +30,6 @@ fun titleText(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Divider(color = lineColor)
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
