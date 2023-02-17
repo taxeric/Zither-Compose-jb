@@ -8,6 +8,8 @@ class SignHelper {
 
     suspend fun sign(): CommandResult = SignProcess.runSign()
 
+    suspend fun sign(keyInfo: KeyInfo, originFilePath: String) = SignProcess.runSign(keyInfo, originFilePath)
+
     suspend fun exec(): CommandResult = SignProcess.exec()
 
     suspend fun showJksInfo(file: String, storepass: String, keytoolPath: String?) = SignProcess.showJksInfo(file, storepass, keytoolPath)

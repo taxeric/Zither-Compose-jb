@@ -93,11 +93,54 @@ object SignProcess: CmdProcess() {
     suspend fun runSign(originFilePath: String = steadyFilePath): CommandResult {
         if (apksignerPath.isEmpty() || originFilePath.isEmpty() ||
             jksPath.isEmpty() || jksKeyStorePwd.isEmpty() ||
-            jksKeyPwd.isEmpty() || jksKeyPwd.isEmpty()){
+            jksKeyAlias.isEmpty() || jksKeyPwd.isEmpty()){
             return CommandResult.checkFailed()
         }
         if (outputFile.isEmpty()) {
             outputFile = localConfigPath + "signed.apk"
+        }
+        val signArgs = mutableListOf<String>().apply {
+            add("java")
+            add("-jar")
+            add(apksignerPath)
+            add("sign")
+            add("--verbose")
+            add("--ks")
+            add(jksPath)
+            add("--ks-pass")
+            add("pass:$jksKeyStorePwd")
+            add("--ks-key-alias")
+            add(jksKeyAlias)
+            add("--key-pass")
+            add("pass:$jksKeyPwd")
+            add("--out")
+            add(outputFile)
+            add(originFilePath)
+        }
+        return realExec(signArgs)
+    }
+
+    /**
+     * 使用配置
+     */
+    suspend fun runSign(
+        jksInfo: KeyInfo,
+        originFilePath: String,
+        outputFile: String = localConfigPath + "signed.apk"
+    ) = runSign(jksInfo.jksPath, jksInfo.jksKeyStorePwd, jksInfo.jksKeyAlias, jksInfo.jksKeyPwd, originFilePath, outputFile)
+
+    suspend fun runSign(
+        jksPath: String,
+        jksKeyStorePwd: String,
+        jksKeyAlias: String,
+        jksKeyPwd: String,
+        originFilePath: String,
+        outputFile: String = localConfigPath + "signed.apk"
+    ): CommandResult {
+        if (apksignerPath.isEmpty() || originFilePath.isEmpty() ||
+            jksPath.isEmpty() || jksKeyStorePwd.isEmpty() ||
+            jksKeyAlias.isEmpty() || jksKeyPwd.isEmpty()){
+            return CommandResult.checkFailed()
         }
         val signArgs = mutableListOf<String>().apply {
             add("java")
