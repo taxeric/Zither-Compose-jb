@@ -1,15 +1,14 @@
 package page.sign
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -18,6 +17,7 @@ import kotlinx.coroutines.launch
 import localCache
 import page.common.CustomTab
 import page.common.SimpleRadioGroup
+import page.common.titleText
 import utils.FileUtil
 import utils.ProcessManager
 import utils.sign.SignProcess
@@ -32,6 +32,9 @@ fun SignScreen() {
     var outputFilePath by remember { mutableStateOf("") }
     var outputFilename by remember { mutableStateOf("") }
 
+    var zipalignEnable by remember { mutableStateOf(false) }
+    var tips by remember { mutableStateOf("Completed !") }
+
     val tabs = mutableListOf<CustomTab>().apply {
         localCache.sign.keys.forEach {
             add(CustomTab(it.tag))
@@ -41,62 +44,122 @@ fun SignScreen() {
 
     Column(
         modifier = Modifier
+            .verticalScroll(rememberScrollState())
             .fillMaxSize()
             .padding(0.dp, 0.dp, 12.dp, 0.dp)
     ) {
-        Text("key")
+        titleText(
+            "选择Key",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 12.dp)
+        )
         keyItems(tabs, selectedIndex) {
             selectedIndex = it
         }
-        Text("output")
-        signFileItem(
+        titleText(
+            "设置输入输出文件",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 12.dp)
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Checkbox(
+                checked = zipalignEnable,
+                onCheckedChange = {
+                    zipalignEnable = it
+                }
+            )
+            Text(
+                "启用对齐",
+                modifier = Modifier
+                    .clickable {
+                        zipalignEnable = !zipalignEnable
+                    }
+            )
+        }
+        signFileItemV2(
             openFolder = false,
+            tips = "未签名文件",
             path = steadyFilePath,
             filename = "",
             onPathChanged = { steadyFilePath = it },
-            onValueChanged = {}
+            onValueChanged = {},
+            modifier = Modifier
+                .fillMaxWidth()
         )
-        signFileItem(
-            path = zipalignCompletedFilePath,
-            filename = zipalignCompletedFilename,
-            onPathChanged = { zipalignCompletedFilePath = it},
-            onValueChanged = { zipalignCompletedFilename = it }
-        )
-        signFileItem(
+        AnimatedVisibility(visible = zipalignEnable) {
+            signFileItemV2(
+                path = zipalignCompletedFilePath,
+                tips = "对齐后文件",
+                filename = zipalignCompletedFilename,
+                onPathChanged = { zipalignCompletedFilePath = it },
+                onValueChanged = { zipalignCompletedFilename = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+        }
+        signFileItemV2(
             path = outputFilePath,
+            tips = "签名后文件",
             filename = outputFilename,
             onPathChanged = { outputFilePath = it },
-            onValueChanged = { outputFilename = it }
+            onValueChanged = { outputFilename = it },
+            modifier = Modifier
+                .fillMaxWidth()
         )
-        Button(
-            onClick = {
-                SignProcess.steadyFilePath = steadyFilePath
-                SignProcess.zipalignCompletedFilePath = zipalignCompletedFilePath + zipalignCompletedFilename
-                SignProcess.outputFile = outputFilePath + outputFilename
-                val selectKey = localCache.sign.keys[selectedIndex]
-                SignProcess.jksPath = selectKey.jksPath
-                SignProcess.jksKeyStorePwd = selectKey.jksKeyStorePwd
-                SignProcess.jksKeyAlias = selectKey.jksKeyAlias
-                SignProcess.jksKeyPwd = selectKey.jksKeyPwd
-                println(SignProcess.jksPath)
-                println(SignProcess.jksKeyStorePwd)
-                println(SignProcess.jksKeyAlias)
-                println(SignProcess.jksKeyPwd)
-                println(SignProcess.steadyFilePath)
-                println(SignProcess.zipalignCompletedFilePath)
-                println(SignProcess.outputFile)
-            }
+        titleText(
+            "执行命令",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 12.dp)
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
         ) {
-            Text("save")
-        }
-        Button(
-            onClick = {
-                coroutine.launch {
-                    ProcessManager.signHelper.exec()
-                }
+            Button(
+                onClick = {
+                    coroutine.launch {
+                        SignProcess.steadyFilePath = steadyFilePath
+                        SignProcess.zipalignCompletedFilePath = zipalignCompletedFilePath + zipalignCompletedFilename
+                        SignProcess.outputFile = outputFilePath + outputFilename
+                        val selectKey = localCache.sign.keys[selectedIndex]
+                        SignProcess.jksPath = selectKey.jksPath
+                        SignProcess.jksKeyStorePwd = selectKey.jksKeyStorePwd
+                        SignProcess.jksKeyAlias = selectKey.jksKeyAlias
+                        SignProcess.jksKeyPwd = selectKey.jksKeyPwd
+                        println(SignProcess.jksPath)
+                        println(SignProcess.jksKeyStorePwd)
+                        println(SignProcess.jksKeyAlias)
+                        println(SignProcess.jksKeyPwd)
+                        println(SignProcess.steadyFilePath)
+                        println(SignProcess.zipalignCompletedFilePath)
+                        println(SignProcess.outputFile)
+                        ProcessManager.signHelper.exec()
+                    }
+                },
+                modifier = Modifier
+            ) {
+                Text("RUN")
             }
-        ) {
-            Text("run")
+            Spacer(modifier = Modifier.width(24.dp))
+            Text(
+                tips,
+                color = Color.Green,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(128.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.Black)
+                    .padding(8.dp)
+                    .verticalScroll(rememberScrollState())
+            )
         }
     }
 }
@@ -130,45 +193,86 @@ private fun keyItems(tabs: List<CustomTab>, selectedIndex: Int, onSelected: (Int
 }
 
 @Composable
-private fun signFileItem(
+private fun signFileItemV2(
+    tips: String,
     path: String,
     onPathChanged: (String) -> Unit,
     filename: String,
     onValueChanged: (String) -> Unit,
     openFolder: Boolean = true,
+    lineColor: Color = Color.LightGray,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
         modifier = modifier
     ) {
-        Text(
-            path,
+        Spacer(modifier = Modifier.height(4.dp))
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .weight(3f)
-        )
-        Button(
-            onClick = {
-                val mPath = if (openFolder) FileUtil.openCommonFolderDialog() else FileUtil.openCommonFileDialog()
-                if (mPath.isNotEmpty()) {
-                    onPathChanged(mPath)
-                }
-            },
-            modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
         ) {
-            Text("set")
-        }
-        if (openFolder) {
-            OutlinedTextField(
-                label = {
-                    Text("文件名")
-                },
-                value = filename,
-                onValueChange = onValueChanged,
+            Text(
+                tips,
                 modifier = Modifier
                     .weight(1f)
             )
+            Box(
+                modifier = Modifier
+                    .weight(2f)
+                    .height(36.dp)
+                    .border(1.dp, Color.Blue, RoundedCornerShape(2.dp))
+            ) {
+                Text(
+                    path,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                )
+            }
+            OutlinedButton(
+                onClick = {
+                    val mPath = if (openFolder) FileUtil.openCommonFolderDialog() else FileUtil.openCommonFileDialog()
+                    if (mPath.isNotEmpty()) {
+                        onPathChanged(mPath)
+                    }
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 8.dp)
+            ) {
+                Text("选择")
+            }
         }
+        if (openFolder) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                Text(
+                    "设置文件名",
+                    modifier = Modifier
+                        .weight(1f)
+                )
+                OutlinedTextField(
+                    label = {
+                        Text("文件名")
+                    },
+                    value = filename,
+                    onValueChange = onValueChanged,
+                    modifier = Modifier
+                        .weight(2f)
+                )
+                Text(
+                    ".apk",
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Divider(modifier = Modifier.fillMaxWidth(), color = lineColor)
     }
 }
