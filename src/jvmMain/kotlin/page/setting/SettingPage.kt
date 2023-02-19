@@ -23,6 +23,9 @@ import kotlinx.coroutines.launch
 import localCache
 import localConfigFilename
 import localConfigPath
+import page.common.chooseFileItem
+import page.common.subtitleText
+import page.common.titleText
 import utils.adb.AdbInfo
 import utils.adb.AdbProcess
 import utils.FileUtil
@@ -39,6 +42,7 @@ fun SettingScreen() {
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .fillMaxSize()
+            .padding(end = 12.dp)
     ) {
         adbView(coroutine)
         signView(coroutine)
@@ -48,29 +52,33 @@ fun SettingScreen() {
 @Composable
 fun adbView(coroutine: CoroutineScope) {
     val adbInfo = adbInfoFlow.collectAsState(initial = AdbInfo()).value
+    var path by remember(adbInfo) { mutableStateOf(adbInfo.path) }
     Column {
-        Text("adb")
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        titleText(
+            "ADB",
             modifier = Modifier
                 .fillMaxWidth()
-        ) {
-            Button(
-                onClick = {
-                    val path = FileUtil.openCommonFileDialog()
-                    if (path.isNotEmpty()) {
-                        val newInfo = AdbInfo(path = path)
-                        adbInfoFlow.tryEmit(newInfo)
-                        AdbProcess.adbPath = path
-                        localCache = localCache.copy(adb = newInfo)
-                        coroutine.launch { FileUtil.write(localCache.covertStr(), localConfigPath, localConfigFilename) }
-                    }
+                .padding(end = 12.dp)
+        )
+        chooseFileItem(
+            openFolder = false,
+            tips = "ADB路径",
+            path = path,
+            filename = "",
+            onPathChanged = {
+                path = it
+                if (it.isNotEmpty()) {
+                    val newInfo = AdbInfo(path = it)
+                    adbInfoFlow.tryEmit(newInfo)
+                    AdbProcess.adbPath = it
+                    localCache = localCache.copy(adb = newInfo)
+                    coroutine.launch { FileUtil.write(localCache.covertStr(), localConfigPath, localConfigFilename) }
                 }
-            ) {
-                Text("重新选择")
-            }
-            Text(adbInfo.path)
-        }
+            },
+            onValueChanged = {},
+            modifier = Modifier
+                .fillMaxWidth()
+        )
     }
 }
 
@@ -78,52 +86,55 @@ fun adbView(coroutine: CoroutineScope) {
 fun signView(coroutine: CoroutineScope) {
     val signInfo = signFlow.collectAsState(initial = SignInfo()).value
     var addKeyDialog by remember { mutableStateOf(false) }
+    var zipalignPath by remember { mutableStateOf(signInfo.zipalignPath) }
+    var apksignerPath by remember { mutableStateOf(signInfo.apksignerPath) }
     Column {
-        Text("sign")
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        titleText(
+            "SIGN",
             modifier = Modifier
                 .fillMaxWidth()
-        ) {
-            Button(
-                onClick = {
-                    val path = FileUtil.openCommonFileDialog()
-                    if (path.isNotEmpty()) {
-                        val newInfo = signInfo.copy(zipalignPath = path)
-                        signFlow.tryEmit(newInfo)
-                        SignProcess.zipalignPath = path
-                        val lastInfo = localCache.sign.copy(zipalignPath = path)
-                        localCache = localCache.copy(sign = lastInfo)
-                        coroutine.launch { FileUtil.write(localCache.covertStr(), localConfigPath, localConfigFilename) }
-                    }
+                .padding(end = 12.dp)
+        )
+        chooseFileItem(
+            openFolder = false,
+            tips = "Zipalign路径",
+            path = zipalignPath,
+            filename = "",
+            onPathChanged = {
+                zipalignPath = it
+                if (it.isNotEmpty()) {
+                    val newInfo = signInfo.copy(zipalignPath = zipalignPath)
+                    signFlow.tryEmit(newInfo)
+                    SignProcess.zipalignPath = zipalignPath
+                    val lastInfo = localCache.sign.copy(zipalignPath = zipalignPath)
+                    localCache = localCache.copy(sign = lastInfo)
+                    coroutine.launch { FileUtil.write(localCache.covertStr(), localConfigPath, localConfigFilename) }
                 }
-            ) {
-                Text("zipalign path")
-            }
-            Text(signInfo.zipalignPath)
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+            },
+            onValueChanged = {},
             modifier = Modifier
                 .fillMaxWidth()
-        ) {
-            Button(
-                onClick = {
-                    val path = FileUtil.openCommonFileDialog()
-                    if (path.isNotEmpty()) {
-                        val newInfo = signInfo.copy(apksignerPath = path)
-                        signFlow.tryEmit(newInfo)
-                        SignProcess.apksignerPath = path
-                        val lastInfo = localCache.sign.copy(apksignerPath = path)
-                        localCache = localCache.copy(sign = lastInfo)
-                        coroutine.launch { FileUtil.write(localCache.covertStr(), localConfigPath, localConfigFilename) }
-                    }
+        )
+        chooseFileItem(
+            openFolder = false,
+            tips = "Apksigner路径",
+            path = apksignerPath,
+            filename = "",
+            onPathChanged = {
+                apksignerPath = it
+                if (it.isNotEmpty()) {
+                    val newInfo = signInfo.copy(apksignerPath = apksignerPath)
+                    signFlow.tryEmit(newInfo)
+                    SignProcess.apksignerPath = apksignerPath
+                    val lastInfo = localCache.sign.copy(apksignerPath = apksignerPath)
+                    localCache = localCache.copy(sign = lastInfo)
+                    coroutine.launch { FileUtil.write(localCache.covertStr(), localConfigPath, localConfigFilename) }
                 }
-            ) {
-                Text("apksigner path")
-            }
-            Text(signInfo.apksignerPath)
-        }
+            },
+            onValueChanged = {},
+            modifier = Modifier
+                .fillMaxWidth()
+        )
         Text("共存在 ${signInfo.keys.size} 个签名文件")
         Button(
             onClick = {
