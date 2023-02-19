@@ -17,8 +17,8 @@ import kotlinx.coroutines.launch
 import localCache
 import page.common.CustomTab
 import page.common.SimpleRadioGroup
+import page.common.chooseFileItem
 import page.common.titleText
-import utils.FileUtil
 import utils.ProcessManager
 import utils.sign.SignProcess
 
@@ -46,7 +46,7 @@ fun SignScreen() {
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .fillMaxSize()
-            .padding(0.dp, 0.dp, 12.dp, 0.dp)
+            .padding(end = 12.dp)
     ) {
         titleText(
             "选择Key",
@@ -82,7 +82,7 @@ fun SignScreen() {
                     }
             )
         }
-        signFileItemV2(
+        chooseFileItem(
             openFolder = false,
             tips = "未签名文件",
             path = steadyFilePath,
@@ -93,7 +93,7 @@ fun SignScreen() {
                 .fillMaxWidth()
         )
         AnimatedVisibility(visible = zipalignEnable) {
-            signFileItemV2(
+            chooseFileItem(
                 path = zipalignCompletedFilePath,
                 tips = "对齐后文件",
                 filename = zipalignCompletedFilename,
@@ -103,7 +103,7 @@ fun SignScreen() {
                     .fillMaxWidth()
             )
         }
-        signFileItemV2(
+        chooseFileItem(
             path = outputFilePath,
             tips = "签名后文件",
             filename = outputFilename,
@@ -189,90 +189,5 @@ private fun keyItems(tabs: List<CustomTab>, selectedIndex: Int, onSelected: (Int
                 )
                 .padding(12.dp, 12.dp)
         )
-    }
-}
-
-@Composable
-private fun signFileItemV2(
-    tips: String,
-    path: String,
-    onPathChanged: (String) -> Unit,
-    filename: String,
-    onValueChanged: (String) -> Unit,
-    openFolder: Boolean = true,
-    lineColor: Color = Color.LightGray,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-    ) {
-        Spacer(modifier = Modifier.height(4.dp))
-        Row (
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            Text(
-                tips,
-                modifier = Modifier
-                    .weight(1f)
-            )
-            Box(
-                modifier = Modifier
-                    .weight(2f)
-                    .height(36.dp)
-                    .border(1.dp, Color.Blue, RoundedCornerShape(2.dp))
-            ) {
-                Text(
-                    path,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                )
-            }
-            OutlinedButton(
-                onClick = {
-                    val mPath = if (openFolder) FileUtil.openCommonFolderDialog() else FileUtil.openCommonFileDialog()
-                    if (mPath.isNotEmpty()) {
-                        onPathChanged(mPath)
-                    }
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp)
-            ) {
-                Text("选择")
-            }
-        }
-        if (openFolder) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                Text(
-                    "设置文件名",
-                    modifier = Modifier
-                        .weight(1f)
-                )
-                OutlinedTextField(
-                    label = {
-                        Text("文件名")
-                    },
-                    value = filename,
-                    onValueChange = onValueChanged,
-                    modifier = Modifier
-                        .weight(2f)
-                )
-                Text(
-                    ".apk",
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp)
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Divider(modifier = Modifier.fillMaxWidth(), color = lineColor)
     }
 }
