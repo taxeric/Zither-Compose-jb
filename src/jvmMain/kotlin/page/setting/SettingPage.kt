@@ -86,8 +86,8 @@ fun adbView(coroutine: CoroutineScope) {
 fun signView(coroutine: CoroutineScope) {
     val signInfo = signFlow.collectAsState(initial = SignInfo()).value
     var addKeyDialog by remember { mutableStateOf(false) }
-    var zipalignPath by remember { mutableStateOf(signInfo.zipalignPath) }
-    var apksignerPath by remember { mutableStateOf(signInfo.apksignerPath) }
+    var zipalignPath by remember(signInfo) { mutableStateOf(signInfo.zipalignPath) }
+    var apksignerPath by remember(signInfo) { mutableStateOf(signInfo.apksignerPath) }
     Column {
         titleText(
             "SIGN",
@@ -101,8 +101,8 @@ fun signView(coroutine: CoroutineScope) {
             path = zipalignPath,
             filename = "",
             onPathChanged = {
-                zipalignPath = it
-                if (it.isNotEmpty()) {
+                if (it.isNotEmpty() && !it.contains("null")) {
+                    zipalignPath = it
                     val newInfo = signInfo.copy(zipalignPath = zipalignPath)
                     signFlow.tryEmit(newInfo)
                     SignProcess.zipalignPath = zipalignPath
@@ -121,8 +121,8 @@ fun signView(coroutine: CoroutineScope) {
             path = apksignerPath,
             filename = "",
             onPathChanged = {
-                apksignerPath = it
-                if (it.isNotEmpty()) {
+                if (it.isNotEmpty() && !it.contains("null")) {
+                    apksignerPath = it
                     val newInfo = signInfo.copy(apksignerPath = apksignerPath)
                     signFlow.tryEmit(newInfo)
                     SignProcess.apksignerPath = apksignerPath
