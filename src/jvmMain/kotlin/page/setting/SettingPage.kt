@@ -1,17 +1,24 @@
 package page.setting
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -135,13 +142,28 @@ fun signView(coroutine: CoroutineScope) {
             modifier = Modifier
                 .fillMaxWidth()
         )
-        Text("共存在 ${signInfo.keys.size} 个签名文件")
-        Button(
-            onClick = {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                buildAnnotatedString {
+                    append("共存在 ")
+                    withStyle(SpanStyle(color = Color.Blue)) {
+                        append("${signInfo.keys.size}")
+                    }
+                    append(" 个签名文件")
+                }
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            ClickableText(
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = Color.Blue, textDecoration = TextDecoration.Underline)) {
+                        append("创建新签名")
+                    }
+                }
+            ) {
                 addKeyDialog = true
             }
-        ) {
-            Text("新签名")
         }
         signInfo.keys.forEach { key ->
             Text(
