@@ -22,4 +22,6 @@ class AdbHelper {
     suspend fun clearApkData(packageName: String) = AdbProcess.exec(listOf("shell", "pm", "clear", packageName))
 
     suspend fun clearApkDataByShell(packageName: String) = AdbProcess.exec(listOf("pm", "clear", packageName), true)
+    
+    suspend fun screenSize() = AdbProcess.exec(listOf("shell", "wm", "size"))
 }
