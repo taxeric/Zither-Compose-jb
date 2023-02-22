@@ -36,6 +36,7 @@ import page.common.titleText
 import utils.adb.AdbInfo
 import utils.adb.AdbProcess
 import utils.FileUtil
+import utils.ProcessManager
 import utils.adb.adbInfoFlow
 import utils.sign.KeyInfo
 import utils.sign.SignInfo
@@ -93,6 +94,7 @@ fun adbView(coroutine: CoroutineScope) {
 fun signView(coroutine: CoroutineScope) {
     val signInfo = signFlow.collectAsState(initial = SignInfo()).value
     var addKeyDialog by remember { mutableStateOf(false) }
+    var createKeyDialog by remember { mutableStateOf(false) }
     var zipalignPath by remember(signInfo) { mutableStateOf(signInfo.zipalignPath) }
     var apksignerPath by remember(signInfo) { mutableStateOf(signInfo.apksignerPath) }
     Column {
@@ -158,11 +160,21 @@ fun signView(coroutine: CoroutineScope) {
             ClickableText(
                 buildAnnotatedString {
                     withStyle(SpanStyle(color = Color.Blue, textDecoration = TextDecoration.Underline)) {
-                        append("创建新签名")
+                        append("选择已存在签名")
                     }
                 }
             ) {
                 addKeyDialog = true
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            ClickableText(
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = Color.Blue, textDecoration = TextDecoration.Underline)) {
+                        append("创建新签名")
+                    }
+                }
+            ) {
+                createKeyDialog = true
             }
         }
         signInfo.keys.forEach { key ->
@@ -178,6 +190,106 @@ fun signView(coroutine: CoroutineScope) {
     }
     if (addKeyDialog) {
         addNewKeyDialog(coroutine) { addKeyDialog = false }
+    }
+    if (createKeyDialog) {
+        createKeyDialog(coroutine) { createKeyDialog = false }
+    }
+}
+
+@Composable
+private fun createKeyDialog(
+    coroutine: CoroutineScope,
+    onClose: () -> Unit,
+) {
+    var keyName by remember { mutableStateOf("") }
+    var path by remember { mutableStateOf("") }
+    var storePwd by remember { mutableStateOf("") }
+    var alias by remember { mutableStateOf("") }
+    var keyPwd by remember { mutableStateOf("") }
+    var err by remember { mutableStateOf("") }
+    Dialog(
+        state = rememberDialogState(position = WindowPosition(Alignment.Center)),
+        onCloseRequest = { onClose() },
+        title = "Create New Sign"
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            subtitleText("文件名")
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = keyName,
+                    onValueChange = {
+                        keyName = it
+                    },
+                    label = {
+                        Text("文件名")
+                    }
+                )
+                Text(".jks")
+            }
+            subtitleText("路径")
+            Text(path.ifEmpty { "未选择" })
+            Button(
+                onClick = {
+                    val mPath = FileUtil.openCommonFolderDialog()
+                    if (!mPath.contains("null")) {
+                        path = mPath
+                    }
+                }
+            ) {
+                Text("选择")
+            }
+            subtitleText("store pwd")
+            OutlinedTextField(
+                value = storePwd,
+                onValueChange = {
+                    storePwd = it
+                }
+            )
+            subtitleText("key pwd")
+            OutlinedTextField(
+                value = alias,
+                onValueChange = {
+                    alias = it
+                }
+            )
+            subtitleText("alias")
+            OutlinedTextField(
+                value = keyPwd,
+                onValueChange = {
+                    keyPwd = it
+                }
+            )
+            Text(
+                err,
+                color = Color.Red,
+            )
+            Button(
+                onClick = {
+                    coroutine.launch {
+                        val result = ProcessManager.signHelper.createJks(
+                            path + keyName,
+                            storePwd,
+                            alias,
+                            keyPwd
+                        )
+                        println(result)
+                        if (result.exitCode != 0) {
+                            err = result.stderr
+                        } else {
+                            onClose()
+                        }
+                    }
+                }
+            ) {
+                Text("Save")
+            }
+        }
     }
 }
 

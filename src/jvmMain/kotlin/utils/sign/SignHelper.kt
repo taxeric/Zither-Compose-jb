@@ -18,4 +18,12 @@ class SignHelper {
         containsMD5: Boolean = true,
         keytoolPath: String? = null
     ) = SignProcess.showJksInfo(file, storepass, containsMD5, keytoolPath)
+
+    suspend fun createJks(
+        storePath: String,
+        storePwd: String,
+        alias: String,
+        keyPwd: String,
+        validity: Int = 10,
+    ) = SignProcess.createKey(storePath, storePwd, alias, keyPwd, validity)
 }
