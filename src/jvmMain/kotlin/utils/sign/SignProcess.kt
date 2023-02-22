@@ -32,6 +32,7 @@ object SignProcess: CmdProcess() {
     var zipalignPath: String = ""
     var apksignerPath: String = ""
     var keytoolPath: String = ""
+    var opensslPath: String = ""
     /**
      * 签名文件路径
      */
@@ -165,6 +166,7 @@ object SignProcess: CmdProcess() {
 
     /**
      * 创建一个密钥
+     * @param validity 有效期,年
      */
     suspend fun createKey(
         storePath: String,
@@ -215,10 +217,20 @@ object SignProcess: CmdProcess() {
         }
         val args = mutableListOf<String>().apply {
             add(keytoolPath ?: "keytool")
-            add("--list")
-            add("-v")
+            if (containsMD5) {
+                add("-exportcert")
+            } else {
+                add("--list")
+                add("-v")
+            }
             add("-keystore")
             add(file)
+            if (containsMD5) {
+                add("|")
+                add("openssl")
+                add("dgst")
+                add("-md5")
+            }
             add("-storepass")
             add(storepass)
         }
@@ -226,4 +238,6 @@ object SignProcess: CmdProcess() {
     }
 
     suspend fun existKeytoolEnvironment() = realExec(listOf("keytool")).exitCode == 0
+
+    suspend fun existOpensslEnvironment() = realExec(listOf("openssl", "version")).exitCode == 0
 }
