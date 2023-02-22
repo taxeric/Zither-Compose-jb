@@ -12,5 +12,10 @@ class SignHelper {
 
     suspend fun exec(): CommandResult = SignProcess.exec()
 
-    suspend fun showJksInfo(file: String, storepass: String, keytoolPath: String?) = SignProcess.showJksInfo(file, storepass, keytoolPath)
+    suspend fun showJksInfo(
+        file: String,
+        storepass: String,
+        containsMD5: Boolean = true,
+        keytoolPath: String? = null
+    ) = SignProcess.showJksInfo(file, storepass, containsMD5, keytoolPath)
 }

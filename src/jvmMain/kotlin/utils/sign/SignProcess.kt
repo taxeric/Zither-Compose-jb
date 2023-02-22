@@ -209,7 +209,7 @@ object SignProcess: CmdProcess() {
     /**
      * @param file jks文件路径
      */
-    suspend fun showJksInfo(file: String, storepass: String, keytoolPath: String?): CommandResult {
+    suspend fun showJksInfo(file: String, storepass: String, containsMD5: Boolean = true, keytoolPath: String?): CommandResult {
         if (!existKeytoolEnvironment()) {
             return CommandResult.checkFailed("环境变量不存在")
         }
