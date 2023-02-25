@@ -1,17 +1,13 @@
 package page.setting
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
+import adbInfoFlow
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
-import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,15 +29,14 @@ import localConfigPath
 import page.common.chooseFileItem
 import page.common.subtitleText
 import page.common.titleText
+import signFlow
 import utils.adb.AdbInfo
 import utils.adb.AdbProcess
 import utils.FileUtil
 import utils.ProcessManager
-import utils.adb.adbInfoFlow
 import utils.sign.KeyInfo
 import utils.sign.SignInfo
 import utils.sign.SignProcess
-import utils.sign.signFlow
 
 @Composable
 fun SettingScreen() {
