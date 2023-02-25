@@ -1,7 +1,5 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,9 +18,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
+import androidx.compose.ui.window.*
 import ext.toObj
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import page.home.MainScreen
 import page.setting.SettingScreen
 import page.common.CustomTab
@@ -118,6 +117,7 @@ fun App() {
 fun topDevice(
     modifier: Modifier = Modifier
 ) {
+    var showDialog by remember { mutableStateOf(false) }
     var refreshState by remember { mutableStateOf(0) }
     val curDevice = produceState(initialValue = Device.default(), key1 = refreshState) {
         val result = ProcessManager.adbHelper.screenDensity()
@@ -167,13 +167,100 @@ fun topDevice(
                     Icons.Filled.KeyboardArrowRight, "",
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .clickable {  }
+                        .clickable { showDialog = !showDialog }
                 )
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Divider(color = Color.LightGray)
         Spacer(modifier = Modifier.height(8.dp))
+    }
+    if (showDialog) {
+        deviceInfoDialog { showDialog = !showDialog }
+    }
+}
+
+@Composable
+fun deviceInfoDialog(
+    onClose: () -> Unit
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val device = deviceFlow.collectAsState(initial = Device.default()).value
+    Dialog(
+        state = rememberDialogState(position = WindowPosition(Alignment.Center)),
+        onCloseRequest = { onClose() },
+        title = device.model
+    ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+        ) {
+            deviceItem(
+                "brand",
+                device.brand,
+            ) {
+                coroutineScope.launch {
+                    val result = ProcessManager.adbHelper.deviceBrand()
+                    if (result.exitCode == 0) {
+                        currentDevice = currentDevice.copy(brand = result.stdout.trim().replace("\n", ""))
+                        deviceFlow.tryEmit(currentDevice)
+                    }
+                }
+            }
+            deviceItem(
+                "sdkVersion",
+                device.sdkVersion.toString(),
+            ) {
+                coroutineScope.launch {
+                    val result = ProcessManager.adbHelper.deviceBuildSDK()
+                    if (result.exitCode == 0) {
+                        currentDevice = currentDevice.copy(sdkVersion = result.stdout
+                            .trim()
+                            .replace("\n", "")
+                            .toInt()
+                        )
+                        deviceFlow.tryEmit(currentDevice)
+                    }
+                }
+            }
+            deviceItem(
+                "releaseVersion",
+                device.releaseVersion.toString(),
+            ) {
+                coroutineScope.launch {
+                    val result = ProcessManager.adbHelper.deviceBuildRelease()
+                    if (result.exitCode == 0) {
+                        currentDevice = currentDevice.copy(releaseVersion = result.stdout
+                            .trim()
+                            .replace("\n", "")
+                            .toInt()
+                        )
+                        deviceFlow.tryEmit(currentDevice)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun deviceItem(
+    title: String,
+    info: String,
+    onClick: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(title, modifier = Modifier.weight(1f))
+        Text(info, modifier = Modifier.weight(1f))
+        Icon(
+            Icons.Filled.Refresh, "",
+            modifier = Modifier
+                .weight(1f)
+                .clickable { onClick.invoke() }
+        )
     }
 }
 
