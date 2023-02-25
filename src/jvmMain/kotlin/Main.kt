@@ -6,9 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -265,8 +263,10 @@ private fun deviceItem(
 }
 
 fun main() = application {
+    val windowState = rememberWindowState()
     Window(
         onCloseRequest = ::exitApplication,
+        state = windowState,
         title = "Zither",
         resizable = false,
 //        transparent = true,
@@ -288,12 +288,23 @@ fun main() = application {
                         modifier = Modifier
                             .align(Alignment.Center)
                     )
-                    IconButton(
-                        onClick = ::exitApplication,
+                    Row(
+                        horizontalArrangement = Arrangement.End,
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
                     ) {
-                        Icon(Icons.Filled.Close, "")
+                        IconButton(
+                            onClick = { windowState.isMinimized = !windowState.isMinimized },
+                            modifier = Modifier
+                        ) {
+                            Icon(Icons.Filled.Star, "")
+                        }
+                        IconButton(
+                            onClick = ::exitApplication,
+                            modifier = Modifier
+                        ) {
+                            Icon(Icons.Filled.Close, "")
+                        }
                     }
                 }
             }
