@@ -2,14 +2,11 @@ package utils.adb
 
 import utils.CmdProcess
 import utils.CommandResult
-import utils.obtainFlow2
 
 data class AdbInfo(
     val path: String = "",
     val version: String = "",
 )
-
-val adbInfoFlow = obtainFlow2<AdbInfo>()
 
 object AdbProcess : CmdProcess(){
 

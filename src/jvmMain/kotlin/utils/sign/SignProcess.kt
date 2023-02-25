@@ -3,7 +3,6 @@ package utils.sign
 import localConfigPath
 import utils.CmdProcess
 import utils.CommandResult
-import utils.obtainFlow2
 
 data class SignInfo(
     val zipalignPath: String = "",
@@ -19,7 +18,6 @@ data class KeyInfo(
     val jksKeyPwd: String = "",
 )
 
-val signFlow = obtainFlow2<SignInfo>()
 
 object SignProcess: CmdProcess() {
 
