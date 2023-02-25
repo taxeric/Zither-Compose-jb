@@ -1,16 +1,16 @@
-import androidx.compose.material.MaterialTheme
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,9 +30,8 @@ import page.common.SimpleRadioGroup
 import page.sign.SignScreen
 import utils.adb.AdbProcess
 import utils.FileUtil
-import utils.adb.adbInfoFlow
+import utils.ProcessManager
 import utils.sign.SignProcess
-import utils.sign.signFlow
 
 @Composable
 @Preview
@@ -61,33 +60,39 @@ fun App() {
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            SimpleRadioGroup(
-                tabs = tabs,
-                orientation = Orientation.Vertical,
-                onSelected = { index, _ ->
-                    selectedIndex = index
-                },
-                defaultSelected = selectedIndex,
+            Column(
                 modifier = Modifier
                     .weight(3f)
-                    .padding(8.dp, 0.dp),
-                contentModifier = Modifier
-                    .padding(24.dp, 8.dp)
-            ) {  tab, selected, childModifier ->
-                Text(
-                    text = tab.text,
-                    textAlign = TextAlign.Center,
-                    color = Color.DarkGray,
-                    fontSize = 12.sp,
-                    modifier = childModifier
+            ) {
+                topDevice()
+                SimpleRadioGroup(
+                    tabs = tabs,
+                    orientation = Orientation.Vertical,
+                    onSelected = { index, _ ->
+                        selectedIndex = index
+                    },
+                    defaultSelected = selectedIndex,
+                    modifier = Modifier
                         .fillMaxWidth()
-                        .border(
-                            1.dp,
-                            if (selected == tab.tag) Color.DarkGray else Color.Transparent,
-                            RoundedCornerShape(4.dp)
-                        )
-                        .padding(0.dp, 12.dp)
-                )
+                        .padding(8.dp, 0.dp),
+                    contentModifier = Modifier
+                        .padding(24.dp, 8.dp)
+                ) {  tab, selected, childModifier ->
+                    Text(
+                        text = tab.text,
+                        textAlign = TextAlign.Center,
+                        color = Color.DarkGray,
+                        fontSize = 12.sp,
+                        modifier = childModifier
+                            .fillMaxWidth()
+                            .border(
+                                1.dp,
+                                if (selected == tab.tag) Color.DarkGray else Color.Transparent,
+                                RoundedCornerShape(4.dp)
+                            )
+                            .padding(0.dp, 12.dp)
+                    )
+                }
             }
             Box(
                 modifier = Modifier
@@ -106,6 +111,69 @@ fun App() {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun topDevice(
+    modifier: Modifier = Modifier
+) {
+    var refreshState by remember { mutableStateOf(0) }
+    val curDevice = produceState(initialValue = Device.default(), key1 = refreshState) {
+        val result = ProcessManager.adbHelper.screenDensity()
+        if (result.exitCode == 0) {
+            val deviceModel = ProcessManager.adbHelper.deviceModel()
+            value = Device(deviceModel.stdout.trim().replace("\n", ""), valid = true)
+            currentDevice = value
+            deviceFlow.tryEmit(currentDevice)
+        } else {
+            value = Device.default()
+        }
+    }.value
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+        ) {
+            Text(
+                "当前设备",
+                fontSize = 20.sp,
+            )
+            Icon(
+                Icons.Filled.Refresh, "",
+                modifier = Modifier
+                    .clickable {
+                        refreshState++
+                    }
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Text(
+                curDevice.model,
+                color = Color.Red,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .align(Alignment.Center)
+            )
+            if (curDevice.valid) {
+                Icon(
+                    Icons.Filled.KeyboardArrowRight, "",
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .clickable {  }
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Divider(color = Color.LightGray)
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
