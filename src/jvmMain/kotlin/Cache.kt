@@ -15,13 +15,16 @@ data class Cache(
 }
 
 data class Device(
-    val name: String,
-    val info: String,
+    val model: String,
+    val brand: String = "",
+    val sdkVersion: Int = 0,
+    val releaseVersion: Int = 0,
+    val remark: String = "",
+    val valid: Boolean = false,
 ) {
     companion object{
         fun default() = Device(
-            name = "unknown",
-            info = ""
+            model = "unknown",
         )
     }
 }
