@@ -5,7 +5,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 
-abstract class CmdProcess {
+abstract class ShellProcess {
 
     suspend fun realExec(
         args: List<String>,
@@ -58,4 +58,6 @@ data class CommandResult(
 
         fun checkFailed(err: String = "") = CommandResult(exitCode = CHECK_FAILED, stderr = err)
     }
+
+    fun isSuccessful() = exitCode == 0
 }

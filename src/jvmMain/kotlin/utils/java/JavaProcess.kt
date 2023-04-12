@@ -1,9 +1,9 @@
 package utils.java
 
-import utils.CmdProcess
+import utils.ShellProcess
 import utils.CommandResult
 
-object JavaProcess: CmdProcess() {
+object JavaProcess: ShellProcess() {
 
     var javaPath = ""
 

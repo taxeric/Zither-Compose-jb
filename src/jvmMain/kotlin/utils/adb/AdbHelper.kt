@@ -36,4 +36,6 @@ class AdbHelper {
     suspend fun screenSize() = AdbProcess.exec(listOf("shell", "wm", "size"))
 
     suspend fun screenDensity() = AdbProcess.exec(listOf("shell", "wm", "density"))
+
+    suspend fun dumpActivities(packageName: String) = AdbProcess.exec(listOf("shell", "dumpsys", "activity", "package", packageName))
 }

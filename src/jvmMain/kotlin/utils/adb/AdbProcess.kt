@@ -1,6 +1,6 @@
 package utils.adb
 
-import utils.CmdProcess
+import utils.ShellProcess
 import utils.CommandResult
 
 data class AdbInfo(
@@ -8,7 +8,7 @@ data class AdbInfo(
     val version: String = "",
 )
 
-object AdbProcess : CmdProcess(){
+object AdbProcess : ShellProcess(){
 
     var adbPath = ""
 

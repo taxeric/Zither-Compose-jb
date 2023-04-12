@@ -1,7 +1,7 @@
 package utils.sign
 
 import localConfigPath
-import utils.CmdProcess
+import utils.ShellProcess
 import utils.CommandResult
 
 data class SignInfo(
@@ -19,7 +19,7 @@ data class KeyInfo(
 )
 
 
-object SignProcess: CmdProcess() {
+object SignProcess: ShellProcess() {
 
     /**
      * zipalign是一种zip归档对齐工具。它确保存档中所有未压缩的文件都与文件的开头对齐。这
