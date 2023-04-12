@@ -95,7 +95,7 @@ fun SignScreen() {
         AnimatedVisibility(visible = zipalignEnable) {
             chooseFileItem(
                 path = zipalignCompletedFilePath,
-                tips = "对齐后文件",
+                tips = "对齐后路径",
                 filename = zipalignCompletedFilename,
                 onPathChanged = { zipalignCompletedFilePath = it },
                 onValueChanged = { zipalignCompletedFilename = it },
@@ -105,7 +105,7 @@ fun SignScreen() {
         }
         chooseFileItem(
             path = outputFilePath,
-            tips = "签名后文件",
+            tips = "签名后路径",
             filename = outputFilename,
             onPathChanged = { outputFilePath = it },
             onValueChanged = { outputFilename = it },
